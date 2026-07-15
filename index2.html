@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>昊天计算器（Ver.2.12.7）</title>
+    <style>
+        :root {
+            --button-font-size: 24px;
+            --button-background-color: #007bff;
+            --background-color: #f4f4f9;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: var(--background-color);
+            animation: fadeIn 1s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .header {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            align-items: center;
+        }
+        .header-logo {
+            width: 50px;
+            height: 50px;
+            margin-right: 10px;
+        }
+        .header-text {
+            font-size: 24px;
+            color: #333;
+        }
+        .calculator {
+            background-color: #fff;
+            border: none;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            animation: slideIn 0.5s ease-in-out;
+        }
+        @keyframes slideIn {
+            from { transform: translateY(-50px); }
+            to { transform: translateY(0); }
+        }
+        .display {
+            width: 100%;
+            height: 60px;
+            text-align: right;
+            margin-bottom: 20px;
+            padding: 15px;
+            font-size: 32px;
+            border: none;
+            border-radius: 10px;
+            background-color: #e9ecef;
+        }
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+        .button {
+            padding: 20px;
+            font-size: var(--button-font-size);
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            background-color: var(--button-background-color);
+            color: #fff;
+            transition: background-color 0.3s, transform 0.1s;
+        }
+        .button:active {
+            background-color: #0056b3;
+            transform: scale(0.95);
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #888;
+        }
+        .modal, .about-modal, .settings-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: none;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+        }
+        .modal-logo, .about-modal-logo {
+            width: 40px;
+            height: 40px;
+            margin-right: 10px;
+        }
+        .modal-buttons, .about-modal-buttons, .settings-modal-buttons {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+        .modal-button, .about-modal-button, .settings-modal-button {
+            padding: 10px 20px;
+            font-size: 18px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: #fff;
+            transition: background-color 0.3s;
+        }
+        .modal-button:active, .about-modal-button:active, .settings-modal-button:active {
+            background-color: #0056b3;
+        }
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 999;
+        }
+        .announcement {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+        }
+        .announcement-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+            font-size: 18px;
+            color: #888;
+        }
+        .announcement-logo {
+            width: 40px;
+            height: 40px;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="logo.jpg" alt="Logo" class="header-logo">
+        <span class="header-text">昊天计算器|由Hatasoft工作室制作</span>
+    </div>
+    <div class="overlay"></div>
+    <div class="modal">
+        <img src="info.png" alt="infoo" class="modal-logo">
+        <p>欢迎使用计算器应用！该应用由Hatsoft工作室制作！</p>
+        <div class="modal-buttons">
+            <button class="modal-button" id="ok-button">确定</button>
+            <button class="modal-button" id="cancel-button">取消</button>
+        </div>
+    </div>
+    <div class="announcement">
+        <img src="info.png" alt="Info" class="announcement-logo">
+        <span class="announcement-close" id="announcement-close">×</span>
+        <p>欢迎使用计算器应用！该应用由Hatsoft工作室制作！当前版本为:Ver.2.12.7</p>
+    </div>
+    <div class="about-modal">
+        <img src="info.png" alt="info" class="about-modal-logo">
+        <p>关于软件：当前版本为：Ver.2.12.7（正式版本），Hatsoft工作室致力于开发高质量的软件应用。</p>
+        <div class="about-modal-buttons">
+            <button class="about-modal-button" id="about-close-button">关闭</button>
+        </div>
+    </div>
+    <div class="settings-modal">
+        <h3>个性化</h3>
+        <label for="font-size">字体大小:</label>
+        <input type="number" id="font-size" min="10" max="50" value="24">
+        <label for="button-color">按钮颜色:</label>
+        <input type="color" id="button-color" value="#007bff">
+        <label for="background-color">背景颜色:</label>
+        <input type="color" id="background-color" value="#f4f4f9">
+        <div class="settings-modal-buttons">
+            <button class="settings-modal-button" id="settings-save-button">保存</button>
+            <button class="settings-modal-button" id="settings-cancel-button">取消</button>
+        </div>
+    </div>
+    <div class="calculator">
+        <input type="text" class="display" readonly>
+        <div class="buttons">
+            <!-- ...existing code... -->
+            <button class="button">7</button>
+            <button class="button">8</button>
+            <button class="button">9</button>
+            <button class="button">/</button>
+            <button class="button">4</button>
+            <button class="button">5</button>
+            <button class="button">6</button>
+            <button class="button">*</button>
+            <button class="button">1</button>
+            <button class="button">2</button>
+            <button class="button">3</button>
+            <button class="button">-</button>
+            <button class="button">0</button>
+            <button class="button">.</button>
+            <button class="button">=</button>
+            <button class="button">+</button>
+            <button class="button" id="clear-button">归零</button>
+            <button class="button" id="delete-button">删除</button>
+            <button class="button" id="about-button">关于软件</button>
+            <button class="button" id="settings-button">个性化</button>
+            <button class="button" id="sqrt-button">√</button>
+            <button class="button" id="pow-button">x^2</button>
+            <button class="button" id="sin-button">sin</button>
+            <button class="button" id="cos-button">cos</button>
+            <button class="button" id="tan-button">tan</button>
+            <!-- ...existing code... -->
+        </div>
+    </div>
+    <div class="footer">
+        &copy; 2024 Hatasoft Studio. All rights reserved.
+    </div>
+    <script>
+        const display = document.querySelector('.display');
+        const buttons = document.querySelectorAll('.button');
+        const modal = document.querySelector('.modal');
+        const overlay = document.querySelector('.overlay');
+        const okButton = document.getElementById('ok-button');
+        const cancelButton = document.getElementById('cancel-button');
+        const announcementClose = document.getElementById('announcement-close');
+        const announcement = document.querySelector('.announcement');
+        const clearButton = document.getElementById('clear-button');
+        const deleteButton = document.getElementById('delete-button');
+        const aboutButton = document.getElementById('about-button');
+        const aboutModal = document.querySelector('.about-modal');
+        const aboutCloseButton = document.getElementById('about-close-button');
+        const settingsButton = document.getElementById('settings-button');
+        const settingsModal = document.querySelector('.settings-modal');
+        const settingsSaveButton = document.getElementById('settings-save-button');
+        const settingsCancelButton = document.getElementById('settings-cancel-button');
+        const fontSizeInput = document.getElementById('font-size');
+        const buttonColorInput = document.getElementById('button-color');
+        const backgroundColorInput = document.getElementById('background-color');
+        const sqrtButton = document.getElementById('sqrt-button');
+        const powButton = document.getElementById('pow-button');
+        const sinButton = document.getElementById('sin-button');
+        const cosButton = document.getElementById('cos-button');
+        const tanButton = document.getElementById('tan-button');
+
+        window.onload = () => {
+            modal.style.display = 'block';
+            overlay.style.display = 'block';
+        };
+
+        okButton.addEventListener('click', () => {
+            modal.style.display = 'none';
+            overlay.style.display = 'none';
+        });
+
+        cancelButton.addEventListener('click', () => {
+            modal.style.display = 'none';
+            overlay.style.display = 'none';
+        });
+
+        announcementClose.addEventListener('click', () => {
+            announcement.style.display = 'none';
+        });
+
+        clearButton.addEventListener('click', () => {
+            display.value = '';
+        });
+
+        deleteButton.addEventListener('click', () => {
+            display.value = display.value.slice(0, -1);
+        });
+
+        aboutButton.addEventListener('click', () => {
+            aboutModal.style.display = 'block';
+            overlay.style.display = 'block';
+        });
+
+        aboutCloseButton.addEventListener('click', () => {
+            aboutModal.style.display = 'none';
+            overlay.style.display = 'none';
+        });
+
+        settingsButton.addEventListener('click', () => {
+            settingsModal.style.display = 'block';
+            overlay.style.display = 'block';
+        });
+
+        settingsSaveButton.addEventListener('click', () => {
+            const fontSize = fontSizeInput.value + 'px';
+            const buttonColor = buttonColorInput.value;
+            const backgroundColor = backgroundColorInput.value;
+
+            document.documentElement.style.setProperty('--button-font-size', fontSize);
+            document.documentElement.style.setProperty('--button-background-color', buttonColor);
+            document.documentElement.style.setProperty('--background-color', backgroundColor);
+
+            settingsModal.style.display = 'none';
+            overlay.style.display = 'none';
+        });
+
+        settingsCancelButton.addEventListener('click', () => {
+            settingsModal.style.display = 'none';
+            overlay.style.display = 'none';
+        });
+
+        sqrtButton.addEventListener('click', () => {
+            display.value = Math.sqrt(parseFloat(display.value));
+        });
+
+        powButton.addEventListener('click', () => {
+            display.value = Math.pow(parseFloat(display.value), 2);
+        });
+
+        sinButton.addEventListener('click', () => {
+            display.value = Math.sin(parseFloat(display.value));
+        });
+
+        cosButton.addEventListener('click', () => {
+            display.value = Math.cos(parseFloat(display.value));
+        });
+
+        tanButton.addEventListener('click', () => {
+            display.value = Math.tan(parseFloat(display.value));
+        });
+
+        buttons.forEach(button => {
+            button.addEventListener('click', () => {
+                if (button.textContent === '=') {
+                    display.value = eval(display.value);
+                } else if (button.textContent !== '归零' && button.textContent !== '删除' && button.textContent !== '关于软件' && button.textContent !== '个性化' && button.textContent !== '√' && button.textContent !== 'x^2' && button.textContent !== 'sin' && button.textContent !== 'cos' && button.textContent !== 'tan') {
+                    display.value += button.textContent;
+                }
+            });
+        });
+    </script>
+</body>
+</html>
